@@ -1,0 +1,12 @@
+name: "rebound burst"
+a: 0.03
+b: 0.25
+c: -52.0
+d: 0
+u0: -64.0
+dt: 0.2
+steps: 200
+step_values: [-15.0]
+input_type: 'pulse'
+pulse_length: 5
+TS: [20]

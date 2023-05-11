@@ -1,0 +1,13 @@
+name: "depolarizing after potential"
+a: 1
+b: 0.2
+c: -60.0
+d: -21.0
+u0: -70.0
+dt: 0.1
+steps: 50
+TS: [10]
+I0: 0.0
+input_type: 'pulse'
+step_values: [20]
+pulse_length: 2

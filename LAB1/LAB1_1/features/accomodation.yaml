@@ -1,0 +1,14 @@
+name: "accomodation"
+a: 0.02
+b: 1
+c: -55.0
+d: 4
+u0: -65.0
+w0: -16.0
+dt: 0.5
+steps: 400
+TS: [0, 300]
+step_values: [0.04, 0.32]
+lengths: [200, 12.5]
+input_type: 'linear'
+w_constant: -65.0

@@ -1,0 +1,13 @@
+name: "class 1 excitable"
+a: 0.02
+b: -0.1
+c: -55.0
+d: 6
+e: 4.1
+f: 108
+u0: -60.0
+dt: 0.25
+steps: 300
+TS: [30]
+step_values: [0.075]
+input_type: 'linear'

@@ -1,0 +1,10 @@
+name: "phasic spiking"
+a: 0.02
+b: 0.25
+c: -65.0
+d: 6.0
+u0: -64.0
+dt: 0.25
+steps: 200
+TS: [20]
+step_values: [0.5]

@@ -1,0 +1,14 @@
+name: "integrator"
+a: 0.02
+b: -0.1
+c: -55.0
+d: 6
+e: 4.1
+f: 108
+u0: -60.0
+dt: 0.25
+steps: 100
+step_values: [9, 9, 9, 9]
+input_type: 'pulse'
+pulse_length: 2
+TS: [9.10, 14.10, 70, 80]

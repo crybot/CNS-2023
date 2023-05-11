@@ -1,0 +1,14 @@
+name: "subthreshold oscillations"
+a: 0.05
+b: 0.26
+c: -60.0
+d: 0
+# e: 4.1
+# f: 108
+u0: -62.0
+dt: 0.25
+steps: 200
+TS: [20]
+step_values: [2]
+input_type: 'pulse'
+pulse_length: 5

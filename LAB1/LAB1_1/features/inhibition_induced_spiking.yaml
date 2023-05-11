@@ -1,0 +1,13 @@
+name: "inhibition induced spiking"
+a: -0.02
+b: -1
+c: -60.0
+d: 8
+u0: -63.8
+dt: 0.5
+steps: 350
+TS: [50]
+I0: 80
+step_values: [75]
+pulse_length: 200
+input_type: 'pulse'

@@ -1,0 +1,10 @@
+name: "mixed mode"
+a: 0.02
+b: 0.2
+c: -55.0
+d: 4
+u0: -70.0
+dt: 0.25
+steps: 160
+TS: [16]
+step_values: [10]

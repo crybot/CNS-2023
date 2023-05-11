@@ -1,0 +1,10 @@
+name: "phasic bursting"
+a: 0.02
+b: 0.25
+c: -55.0
+d: 0.05
+u0: -64.0
+dt: 0.2
+steps: 200
+TS: [20]
+step_values: [0.6]

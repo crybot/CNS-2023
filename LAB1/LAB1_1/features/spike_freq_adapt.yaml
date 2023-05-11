@@ -1,0 +1,10 @@
+name: "spike frequency adaptation"
+a: 0.01
+b: 0.2
+c: -65.0
+d: 8
+u0: -70.0
+dt: 0.25
+steps: 85
+TS: [8.5]
+step_values: [30]

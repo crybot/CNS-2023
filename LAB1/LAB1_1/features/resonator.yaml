@@ -1,0 +1,12 @@
+name: "resonator"
+a: 0.1
+b: 0.26
+c: -60.0
+d: -1.0
+u0: -62.0
+dt: 0.25
+steps: 400
+step_values: [0.65, 0.65, 0.65, 0.65]
+input_type: 'pulse'
+pulse_length: 4
+TS: [40, 60, 280, 320]

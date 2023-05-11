@@ -1,0 +1,12 @@
+name: "rebound spike"
+a: 0.03
+b: 0.25
+c: -60.0
+d: 4
+u0: -64.0
+dt: 0.25
+steps: 200
+step_values: [-15.0]
+input_type: 'pulse'
+pulse_length: 5
+TS: [20]

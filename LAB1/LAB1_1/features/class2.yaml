@@ -1,0 +1,12 @@
+name: "class 2 excitable"
+a: 0.2
+b: 0.26
+c: -65.0
+d: 0
+u0: -64.0
+dt: 0.25
+steps: 300
+TS: [30]
+I0: -0.5
+step_values: [0.015]
+input_type: 'linear'

@@ -1,0 +1,12 @@
+name: "threshold variability"
+a: 0.03
+b: 0.25
+c: -60.0
+d: 4
+u0: -64.0
+dt: 0.25
+steps: 100
+step_values: [1, -6, 1]
+input_type: 'pulse'
+pulse_length: 5
+TS: [10, 70, 80]
