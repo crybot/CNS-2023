@@ -1,15 +1,18 @@
+#!/usr/bin/python3
+
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 import glob
 from animation import animate_plot
+import argparse
 
 def euler_step(f, t, dt, x, *args):
     return x + dt * f(t, x, *args)
 
 def izhikevich(I, a, b, c, d, u0, w0 = None, w_constant = None,
         dt = 0.25, e = 5, f = 140, steps = 100,
-        leapfrog = False, plot = True, animate = True, **kwargs):
+        leapfrog = False, plot = True, save_file = True, animate = True, name = None, **kwargs):
     f_u = lambda t, u, w: 0.04 * u**2 + e*u + f - w + I[t]
 
     if w_constant:
@@ -79,7 +82,10 @@ def izhikevich(I, a, b, c, d, u0, w0 = None, w_constant = None,
         else:
             axs[2].plot(us, ws, 'tab:green', alpha=0.7, dashes=(2,1))
 
-        plt.show()
+        plt.savefig(f'{name}.png')
+
+        if not save_file:
+            plt.show(block=animate)
 
 def make_step(v, t1, T, dt, v0=0):
     T1 = int(t1 / dt)
@@ -116,6 +122,10 @@ def make_pulse(step_values, length, ts, T, dt, v0=0):
     return I
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--animate', action='store_true')
+    args = parser.parse_args()
+
     for filename in glob.glob("features/*.yaml"):
         print(filename)
         with open(filename) as f:
@@ -124,9 +134,6 @@ def main():
             steps = parameters['steps']
             input_type = parameters.get('input_type', 'step')
             I0 = parameters.get('I0', 0)
-
-            # if parameters['name'] != 'bistability':
-            #     continue
 
             if input_type == 'linear':
                 I = make_linear(parameters['step_values'],
@@ -140,7 +147,7 @@ def main():
                 I = make_step(parameters['step_values'][0],
                         parameters['TS'][0], steps, dt, v0=I0)
 
-            izhikevich(I, leapfrog=True, plot=True, **parameters)
+            izhikevich(I, leapfrog=True, plot=True, save_file=True, animate=args.animate, **parameters)
 
 if __name__ == '__main__':
     main()
