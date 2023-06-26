@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,7 +13,7 @@ from operator import itemgetter
 def correlation(X):
     return np.dot(X.T, X)
 
-def training(model, x, eta = 1e-3, epochs = 100, eps=1e-5, plot = True):
+def training(model, x, eta = 1e-3, epochs = 100, eps=1e-5, plot = True, save_file = True, name=None):
     bcm = isinstance(model, BCMFiringRate)
     w_new = model.weights
     w_history = [w_new]
@@ -56,6 +58,9 @@ def training(model, x, eta = 1e-3, epochs = 100, eps=1e-5, plot = True):
         if bcm:
             axs[2, 1].plot(range(len(theta_history)), theta_history, color='tab:orange')
             axs[2, 1].set_title('Theta (BCM) over epochs')
+
+        if save_file:
+            plt.savefig(f'figures/{name}.png')
         plt.show()
 
     return w_history, corr, e_val, e_vec
@@ -68,17 +73,17 @@ def main():
     ds = pd.read_csv(DATASET_PATH, header=None)
     ds = ds.transpose()
 
-    # model = HebbFiringRate(2, 1)
-    # ws, _, _, _ = training(model, ds.values)
+    model = HebbFiringRate(2, 1)
+    ws, _, _, _ = training(model, ds.values, name='hebb')
 
-    # model = OjaFiringRate(2, 1)
-    # ws, _, _, _ = training(model, ds.values)
+    model = OjaFiringRate(2, 1)
+    ws, _, _, _ = training(model, ds.values, name='oja')
 
-    # model = SubtractiveNormFiringRate(2, 1)
-    # ws, _, _, _ = training(model, ds.values)
+    model = SubtractiveNormFiringRate(2, 1)
+    ws, _, _, _ = training(model, ds.values, name='subtractive_norm')
 
     model = BCMFiringRate(2, 1, theta0 = 0.1, tau = 0.1)
-    ws, _, _, _ = training(model, ds.values, epochs = 10000, eta = 0.1)
+    ws, _, _, _ = training(model, ds.values, epochs = 500, eta = 0.01, name='bcm')
 
 if __name__ == '__main__':
     main()

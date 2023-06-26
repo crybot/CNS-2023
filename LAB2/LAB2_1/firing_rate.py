@@ -57,11 +57,10 @@ class BCMFiringRate(HebbFiringRate):
 
     def forward(self, *args, **kwargs):
         super().forward(*args, **kwargs)
-        self.theta = self.theta + self.tau * (np.asscalar(self.last_y**2) - self.theta)
-        # print(f"theta = {self.theta}, y = {self.last_y}")
+        self.theta = self.theta + self.tau * ((self.last_y**2).item() - self.theta)
 
     def backward(self, eta = 1e-3):
-        w_new = self.weights + eta * (self.last_y*self.last_x - (self.last_y - self.theta))
+        w_new = self.weights + eta * (self.last_y*self.last_x*(self.last_y - self.theta))
         self.update(w_new)
 
 
