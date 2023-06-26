@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -122,7 +124,7 @@ default_config = {'neurons': 100, 'pe': 0.2280878357769644, 'win_e': 0.936537158
 
 sweep_config = {
   'method': 'bayes',
-  'iterations': 200,
+  'iterations': 100,
   'metric': {
     'name': 'mae',
     'goal': 'minimize'
@@ -133,78 +135,78 @@ sweep_config = {
         'min': 10.0,
         'max': 200.0
     },
-    # 'neurons': {
-    #     'values': [100, 200, 300],
-    #     'distribution': 'uniform',
-    #     'min': 100,
-    #     'max': 800
-    # },
-    # 'pe': {
-    #     'values': [0.1, 0.3, 0.6],
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 0.9
-    # },
-    # 'a1': {
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 0.9,
-    # },
-    # 'a2': {
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 0.9
-    # },
-    # 'a3': {
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 0.9
-    # },
-    # 'b1': {
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 0.9
-    # },
-    # 'b2': {
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 0.9
-    # },
-    # 'b3': {
-    #     'distribution': 'uniform',
-    #     'min': -0.9,
-    #     'max': -0.1,
-    # },
-    # 'win_e': {
-    #     'values': [1, 4, 8],
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 10.0
-    # },
-    # 'win_i': {
-    #     'values': [1, 4, 8],
-    #     'distribution': 'uniform',
-    #     'min': 0.1,
-    #     'max': 10.0
-    # },
-    # 'w_e': {
-    #     'values': [0, 0.1, 0.5],
-    #     'distribution': 'uniform',
-    #     'min': 0.0,
-    #     'max': 0.1
-    # },
-    # 'w_i': {
-    #     'values': [0, 0.1, 0.5],
-    #     'distribution': 'uniform',
-    #     'min': 0.0,
-    #     'max': 0.1
-    # },
-    # 'threshold': {
-    #     'values': [20, 30, 70],
-    #     'distribution': 'uniform',
-    #     'min': 20,
-    #     'max': 100
-    # }
+    'neurons': {
+        'values': [100, 200, 300],
+        'distribution': 'uniform',
+        'min': 100,
+        'max': 800
+    },
+    'pe': {
+        'values': [0.1, 0.3, 0.6],
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 0.9
+    },
+    'a1': {
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 0.9,
+    },
+    'a2': {
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 0.9
+    },
+    'a3': {
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 0.9
+    },
+    'b1': {
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 0.9
+    },
+    'b2': {
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 0.9
+    },
+    'b3': {
+        'distribution': 'uniform',
+        'min': -0.9,
+        'max': -0.1,
+    },
+    'win_e': {
+        'values': [1, 4, 8],
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 10.0
+    },
+    'win_i': {
+        'values': [1, 4, 8],
+        'distribution': 'uniform',
+        'min': 0.1,
+        'max': 10.0
+    },
+    'w_e': {
+        'values': [0, 0.1, 0.5],
+        'distribution': 'uniform',
+        'min': 0.0,
+        'max': 0.1
+    },
+    'w_i': {
+        'values': [0, 0.1, 0.5],
+        'distribution': 'uniform',
+        'min': 0.0,
+        'max': 0.1
+    },
+    'threshold': {
+        'values': [20, 30, 70],
+        'distribution': 'uniform',
+        'min': 20,
+        'max': 100
+    }
   }
 }
 
@@ -257,27 +259,19 @@ def main():
     prediction = lsm.predict(val_ts[:-1])
     error = np.mean(np.abs(prediction - val_ts[1:]))
 
-    """ OPTIMIZATION PLOTS """
-    # Plot the results
-    limit_x = 200.0
-    x = np.linspace(0, limit_x, 1000)
-    # y = f(x)
-    opt = optimizer.optimizer
-    mu, cov = opt.gp.predict(np.array([list(opt.encoder.encode_dict({'x': xi}).values()) for xi in x]))
-    mu = mu.reshape((len(x),))
-    std = np.sqrt(np.diag(cov))
-
-    # plt.plot(x, y, label='True Function')
-    plt.plot(opt.x, opt.y, 'ro', markersize=8, label='Observations')
-    plt.plot(x, mu, label='Predictive Mean')
-    plt.fill_between(x, mu+std, mu-std, alpha=0.2, label='Uncertainty')
-    plt.legend()
-    plt.show()
-    """"""""""""""""""""""""""
-
     print(error)
     plt.plot(range(len(val_ts[1:])), val_ts[1:])
     plt.plot(range(len(prediction)), prediction)
+    plt.title('Test target vs output')
+    plt.savefig('test.png')
+    plt.show()
+
+    prediction = lsm.predict(train_ts[:-1])
+
+    plt.plot(range(len(train_ts[1:])), train_ts[1:])
+    plt.plot(range(len(prediction)), prediction)
+    plt.title('Training target vs output')
+    plt.savefig('training.png')
     plt.show()
 
     if not saved:
