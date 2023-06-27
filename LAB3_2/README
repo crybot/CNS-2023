@@ -1,0 +1,10 @@
+README
+
+usage: All required code is within the notebook `LAB3_2.ipynb`, along with some documentation.
+
+the required plots are included in the files `test.png` and `training.png` for both training and testing.
+
+RESULTS:
+Training loss 0.00045475219045451533
+Validation loss 0.0005099494641263967
+Test loss 0.0004706395066700293
