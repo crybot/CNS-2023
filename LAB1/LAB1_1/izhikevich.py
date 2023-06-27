@@ -8,11 +8,31 @@ from animation import animate_plot
 import argparse
 
 def euler_step(f, t, dt, x, *args):
+    """Perform an Euler step."""
     return x + dt * f(t, x, *args)
 
 def izhikevich(I, a, b, c, d, u0, w0 = None, w_constant = None,
         dt = 0.25, e = 5, f = 140, steps = 100,
         leapfrog = False, plot = True, save_file = True, animate = True, name = None, **kwargs):
+    """Simulate Izhikevhich's model using the Euler method
+
+    Arguments:
+    I           -- input current
+    a, b, c, d  -- model parameters
+    u0          -- initial membrane potential of the system
+
+    Keyword argumetns:
+    w0          -- initial recovery variable of the system
+    w_constant  -- value to use to overwrite the updated w, ignored if None (default None)
+    dt          -- discrete ODE timestep (default 0.25)
+    e, t        -- additional model parameters (default 5, 140)
+    steps       -- number of simulation steps (default 100)
+    leapfrog    -- whether to use leapfrog. If false use the naive Euler method (default False)
+    plot        -- whether to plot the membrane potentials and the phase portraits (default True)
+    save_file   -- whether to save the resulting plots to a file under `name` (default True)
+    animate     -- if True, instead of creating a static plot, show an animation of the phase portrait and membrane potential (default True)
+    name        -- base filename to use when saving the plots (default None)
+    """
     f_u = lambda t, u, w: 0.04 * u**2 + e*u + f - w + I[t]
 
     if w_constant:
@@ -88,11 +108,13 @@ def izhikevich(I, a, b, c, d, u0, w0 = None, w_constant = None,
             plt.show(block=animate)
 
 def make_step(v, t1, T, dt, v0=0):
+    """Create a step input current with `v` peak value."""
     T1 = int(t1 / dt)
     N = int(T / dt)
     return np.array([v0] * T1 + [v] * (N - T1))
 
 def make_linear(step_values, lengths, ts, T, dt, v0=0):
+    """Create a linearly increasing input current."""
     if not lengths:
         lengths = [None]*len(ts)
 
@@ -111,6 +133,7 @@ def make_linear(step_values, lengths, ts, T, dt, v0=0):
     return I
 
 def make_pulse(step_values, length, ts, T, dt, v0=0):
+    """Create a plusing input current."""
     N = int(T / dt)
     I = np.zeros(int(T / dt))
 
@@ -126,6 +149,8 @@ def main():
     parser.add_argument('-a', '--animate', action='store_true')
     args = parser.parse_args()
 
+    # Run over every feature file, each describing the model's parameters under
+    # a YAML file.
     for filename in glob.glob("features/*.yaml"):
         print(filename)
         with open(filename) as f:

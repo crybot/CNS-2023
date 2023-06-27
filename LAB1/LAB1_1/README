@@ -1,0 +1,9 @@
+README
+
+usage: ./izhikevich.py [-a | --animate]
+
+The flag --animate creates visual animations of the phase portraits, membrane
+potentials and input currents for each of Izhikevich's features.
+Each figure is blocking, so to go the next one, please close the current window.
+
+The already plotted figures are under `figures/`
