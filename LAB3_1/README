@@ -1,0 +1,21 @@
+README
+
+NARMA10 Results:
+- TDNN Training loss:   0.0003
+- TDNN Validation loss: 0.0003
+- TDNN Test loss:       0.0004
+- RNN Training loss:    0.003
+- RNN Validation loss:  0.003
+- RNN Test loss:        0.003
+
+MG17 Results:
+- TDNN Training loss:   1.4e-5
+- TDNN Validation loss: 1.4e-5
+- TDNN Test loss:       3.5e-5
+- RNN Training loss:    0.0001
+- RNN Validation loss:  0.0001
+- RNN Test loss:        0.0001
+
+
+usage: The notebook `LAB3-TDNN.ipynb` provides all the necessary code to run the experiment.
+The required plots are under the `figures/` directory
