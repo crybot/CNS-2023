@@ -14,6 +14,18 @@ def correlation(X):
     return np.dot(X.T, X)
 
 def training(model, x, eta = 1e-3, epochs = 100, eps=1e-5, plot = True, save_file = True, name=None):
+    """Train the given `FiringRate` model.
+
+    Arguments:
+    model       -- an instance (or subclass) of firing_rate.FiringRate
+    x           -- input data
+    eta         -- learning rate (default 1e-3)
+    epochs      -- epochs to run the training for (default 100)
+    eps         -- desidered precision to reach before stopping the training (default 1e-5)
+    plot        -- whether to plot the weights evolution (default True)
+    save_file   -- save the plots to a file if True (default True)
+    name        -- base filename to use for saving the plots, ignored if None (default None)
+    """
     bcm = isinstance(model, BCMFiringRate)
     w_new = model.weights
     w_history = [w_new]

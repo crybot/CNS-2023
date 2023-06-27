@@ -1,6 +1,11 @@
 import numpy as np
 
 class FiringRate():
+    """Base Firing rate model
+
+    Extending subclasses should override the `forward`, `update` and `backward`
+    methods to provide new learning rules.
+    """
     def __init__(self, input_neurons, output_neurons):
         self.input_neurons = input_neurons
         self.weights = np.random.random((output_neurons, input_neurons))
