@@ -2,7 +2,9 @@ README
 
 usage: All required code is within the notebook `LAB3_2.ipynb`, along with some documentation.
 
-the required plots are included in the files `test.png` and `training.png` for both training and testing.
+The required plots are included in the files `test.png` and `training.png` for both training and testing.
+
+The weight matrices for the ESN are saved in binary format in the `dump.npz` file. You can load the weights by using the last cell of the notebook, which also performs model evaluation after having loaded the weights into the appropriate class.
 
 RESULTS:
 Training loss 0.00045475219045451533
