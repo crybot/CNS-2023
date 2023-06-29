@@ -1,0 +1,4013 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title></title>
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/solarized.css" id="theme" />
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css" />
+	<link rel="stylesheet" href="css/layout.css" />
+	<link rel="stylesheet" href="plugin/customcontrols/style.css">
+
+
+
+    <script defer src="dist/fontawesome/all.min.js"></script>
+
+	<script type="text/javascript">
+		var forgetPop = true;
+		function onPopState(event) {
+			if(forgetPop){
+				forgetPop = false;
+			} else {
+				parent.postMessage(event.target.location.href, "app://obsidian.md");
+			}
+        }
+		window.onpopstate = onPopState;
+		window.onmessage = event => {
+			if(event.data == "reload"){
+				window.document.location.reload();
+			}
+			forgetPop = true;
+		}
+
+		function fitElements(){
+			const itemsToFit = document.getElementsByClassName('fitText');
+			for (const item in itemsToFit) {
+				if (Object.hasOwnProperty.call(itemsToFit, item)) {
+					var element = itemsToFit[item];
+					fitElement(element,1, 1000);
+					element.classList.remove('fitText');
+				}
+			}
+		}
+
+		function fitElement(element, start, end){
+
+			let size = (end + start) / 2;
+			element.style.fontSize = `${size}px`;
+
+			if(Math.abs(start - end) < 1){
+				while(element.scrollHeight > element.offsetHeight){
+					size--;
+					element.style.fontSize = `${size}px`;
+				}
+				return;
+			}
+
+			if(element.scrollHeight > element.offsetHeight){
+				fitElement(element, start, size);
+			} else {
+				fitElement(element, size, end);
+			}		
+		}
+
+
+		document.onreadystatechange = () => {
+			fitElements();
+			if (document.readyState === 'complete') {
+				if (window.location.href.indexOf("?export") != -1){
+					parent.postMessage(event.target.location.href, "app://obsidian.md");
+				}
+				if (window.location.href.indexOf("print-pdf") != -1){
+					let stateCheck = setInterval(() => {
+						clearInterval(stateCheck);
+						window.print();
+					}, 250);
+				}
+			}
+	};
+
+
+        </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+# Memory-augmented Reservoir Computing
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Abstract
+
+</div>
+</div>
+<div class="callout-content">
+
+This seminar explores implementing **external working memories** into reservoir models, with a focus on theoretical aspects of computational **expressiveness**.
+
+The landscape of recent memory-augmented reservoir computing is examined, showing the Reservoir memory machine (**RMM**) as well as the Reservoir stack machine (**RSM**).
+
+State of the art **end-to-end models** are then briefly investigated, along with some interesting future research directions.
+
+</div>
+</div>
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Motivation
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Neural networks with external memories
+
+</div>
+</div>
+<div class="callout-content">
+
+**Neural Turing Machines**<sup id="fnref:1" role="doc-noteref">1</sup>and **Differentiable Neural Computers**<sup id="fnref:2" role="doc-noteref">2</sup>have been explored extensively within the ML landscape.
+
+</div>
+</div>
+
+The main motivation behind such systems is to enable the network to model **long term dependencies**, for which standard **RNN**s tend to fail.
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:10" role="doc-endnote" class="footnote"><p>
+
+[Alex Graves, Greg Wayne, Ivo Danihelka (2014)](@gravesNeuralTuringMachines2014)
+
+</p></li><li id="fn:11" role="doc-endnote" class="footnote"><p>
+
+[Alex Graves, et al. (2016)](@gravesHybridComputingUsing2016)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Motivation
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+Being notoriously hard to train in an **end-to-end** fashion (as in deep learning), the application of such networks is currently limited.
+
+Here we will focus in particular on **memory-augmented Reservoir Computing** methods, which have been showing promising results lately.
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Advantages
+
+</div>
+</div>
+<div class="callout-content">
+
+Some advantages of these randomized recurrent architectures include much **lower training and inference times**, compared to the their deep counterparts, along with some nice theoretical results.
+
+</div>
+</div>
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Motivation
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color5">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-exclamation-triangle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Limitations
+
+</div>
+</div>
+<div class="callout-content">
+
+While proving useful in some scenarios, memory-augmented reservoir computing still hold onto some problems, like the need to produce **target memory control sequences** for the training algorithm. These aspects will be analyzed later on.
+
+</div>
+</div>
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Idea
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color2">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-fire-alt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Extending ESNs
+
+</div>
+</div>
+<div class="callout-content">
+
+The main idea behind memory-augmented reservoir computing, is that of extending Echo State Networks (ESN) with external memories.
+
+By separating memory from computation we can thus design systems that are able to model arbitrarily long term dependencies in the input without interference<sup id="fnref:1" role="doc-noteref">1</sup>.
+
+</div>
+</div>
+
+
+
+
+<img src="Pictures/rmm.png" alt="" style="width: 700px; object-fit: fill">
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:1" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paassen, Alexander Schulz (2020)](@paassenReservoirMemoryMachines2020)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Echo State Networks
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+Echo State Networks are a kind of **Randomized RNN**s and are studied under the field of **Reservoir Computing**.
+
+A **standard** echo state network follows the same update equations of a vanilla RNN:
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Definition (*RNN equations*)
+
+</div>
+</div>
+<div class="callout-content">
+
+`$\begin{aligned} &h_{t} = f(x_{t}, h_{t}) = \tanh({\mathbf{U} \cdot x_{t} + \mathbf{W} \cdot h_{t-1}}) \\ &y_{t} = \mathbf{V} \cdot h_{t} \\ \end{aligned}$`
+
+</div>
+</div>
+
+
+With the following differences:
+> 1. `$\mathbf{U}$` and `$\mathbf{W}$` are fixed
+> 2. The network must hold the **Echo State Property**. 
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Echo State Property
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+Provides a theoretical guarantee that the state of the reservoir will depend on the input and not on the **initial conditions**, with past influences degrading over time. This is related to the concept of **Markovianity**<sup id="fnref:2" role="doc-noteref">1</sup>, which is typically achieved by designing the model to be a contractive map.
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+**Definition** (*Contractive reservoir*)
+
+</div>
+</div>
+<div class="callout-content">
+
+Let `$\mathcal{R} = (\mathbf{U}, \mathbf{W}, b, \sigma, h_{0})$` be a reservoir. We say `$\mathcal{R}$` is *contractive* with constant `$C \in (0, 1)$` if for any `$h, h' \in \mathbb{R}^m$`  and any `$x \in \mathbb{R}^n$` it holds:
+
+`$ ||f(x, h) - f(x, h')|| \leq C \cdot ||h - h'||$`
+
+where `$f$` is defined as in the update equations of a vanilla RNN.
+
+</div>
+</div>
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:2" role="doc-endnote" class="footnote"><p>
+
+[Claudio Gallicchio, Alessio Micheli (2011)](@gallicchioArchitecturalMarkovianFactors2011)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Limitations of ESN
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color7">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-bolt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Memory capacity
+
+</div>
+</div>
+<div class="callout-content">
+
+Since echo state networks hold the echo state property, the influence of past inputs is limited by the contractive properties of the network. As such, **long term dependency** tasks are out of reach of such models.
+
+**The memory capacity** is limited by the number of neurons of the reservoir<sup id="fnref:3" role="doc-noteref">1</sup>
+
+</div>
+</div>
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:3" role="doc-endnote" class="footnote"><p>
+
+[Igor Farkaš, Radomír Bosák, Peter Gergeľ (2016)](@farkasComputationalAnalysisMemory2016)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color5">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-exclamation-triangle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Echo state property
+
+</div>
+</div>
+<div class="callout-content">
+
+The echo state property is necessary in order for the network not to discriminate on initial conditions, but it forcefully limits its capability to model long term dependencies in the input.
+
+For this reason, **Reservoir memory machines** have been proposed.
+
+</div>
+</div>
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+The vanilla **RMM**<sup id="fnref:1" role="doc-noteref">1</sup>has been introduced as an extension of standard ESNs.
+In particular the network is equipped with an external memory that it can access using a **read** and a **write** head.
+
+<img src="Pictures/rmm.png" alt="" style="object-fit: scale-down">
+
+<!-- .element: class="fragment fade-down" -->
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:1" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paassen, Alexander Schulz (2020)](@paassenReservoirMemoryMachines2020)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Dynamics
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+<img src="Pictures/rmm.png" alt="" style="object-fit: scale-down">
+
+
+<div class="block">
+
+1. Copy previous memory state: `$\mathbf{M}_{t} \leftarrow \mathbf{M}_{t-1}$`
+2. Compute write head discriminator: `$c_{t}^{w}= u^{w}\cdot x^{t}+ v^{w}\cdot h_{t}$` 	1. if `$c_{t}^{w}> 0$` then `$\mathbf{M}_{t,k} \leftarrow x_t$` and `$k_t \leftarrow k_{t-1}+1$`  3. Compute read head discriminator: `$c_{t}^{r}= \mathbf{U}^{r}\cdot x_{t}+ \mathbf{V}^{r}\cdot h_t$`
+	 1. `$l_{t} \leftarrow \begin{cases} l_{t} & \text{if}\: c^{r}_{t,1} = \max\{c^{r}_{t,1}, c^{r}_{t,2},c^{r}_{t,3}\} \\ l_{t-1} + 1 & \text{if}\: c^{r}_{t,2} = \max\{c^{r}_{t,1}, c^{r}_{t,2},c^{r}_{t,3}\} \\ 1  & \text{otherwise} \end{cases}$`
+  4. Set `$r_{t}\leftarrow \mathbf{M}_{t,l_t}$` 
+  5. Compute the output of the network: `$y_{t} = \mathbf{V}\cdot h_{t}+ \mathbf{R}\cdot r_{t}$`
+</div>
+
+
+ <!-- .element: style="font-size: 28px" -->
+  
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Dynamics
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+<div class="block">
+
+1. Copy previous memory state: `$\mathbf{M}_{t} \leftarrow \mathbf{M}_{t-1}$`
+2. Compute write head discriminator: `$c_{t}^{w}= u^{w}\cdot x^{t}+ v^{w}\cdot h_{t}$` 	1. if `$c_{t}^{w}> 0$` then `$\mathbf{M}_{t,k} \leftarrow x_t$` and `$k_t \leftarrow k_{t-1}+1$`  3. Compute read head discriminator: `$c_{t}^{r}= \mathbf{U}^{r}\cdot x_{t}+ \mathbf{V}^{r}\cdot h_t$`
+	 1. `$l_{t} \leftarrow \begin{cases} l_{t} & \text{if}\: c^{r}_{t,1} = \max\{c^{r}_{t,1}, c^{r}_{t,2},c^{r}_{t,3}\} \\ l_{t-1} + 1 & \text{if}\: c^{r}_{t,2} = \max\{c^{r}_{t,1}, c^{r}_{t,2},c^{r}_{t,3}\} \\ 1  & \text{otherwise} \end{cases}$`
+  4. Set `$r_{t}\leftarrow \mathbf{M}_{t,l_t}$` 
+  5. Compute the output of the network: `$y_{t} = \mathbf{V}\cdot h_{t}+ \mathbf{R}\cdot r_{t}$`
+</div>
+
+
+ <!-- .element: style="font-size: 28px" -->
+ 
+<div class="callout callout-color2">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-fire-alt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Differentiability
+
+</div>
+</div>
+<div class="callout-content">
+
+Note that since the network is not trained in an end-to-end fashion, there's no need to make the memory mechanics differentiable.
+
+</div>
+</div>
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Dynamics
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Improvements over base model
+
+</div>
+</div>
+<div class="callout-content">
+
+Imposing the memory's cells to be only **written once**, the RMM can use a **single head** for both reading and writing to memory
+
+
+
+</div>
+</div>
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Dynamics
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+ The RMM operates as a standard ESN until `$a_{t} \neq 0$` for the first time
+<img src="Pictures/rmm/rmm-dynamics-annotated.png" alt="" style="object-fit: scale-down">
+
+ The first time `$h_t$` enters the receptive field of a memory address `$a_t > 0$` (orange region), it is stored in memory. When later on the hidden state enters again the same receptive field, the previously stored data is retrieved (in the example, `$h_{8}  = h_{2}$`)
+
+<!-- .element: style="font-size: 25px" -->
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Dynamics
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+<!-- advanced-slides plugin does not render mathjax properly with newlines -->
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+RMM dynamics
+
+</div>
+</div>
+<div class="callout-content">
+
+`$\begin{align*} \tilde{h}_{t} &= f(x_{t}, h_{t-1}) = \sigma\left(\mathbf{U}\cdot x_{t}+ \mathbf{W} \cdot h_{t-1} + b\right) \newline a_{t} &= c(\tilde{h}_{t})\newline \mathbf{M}_{t,l} &= \begin{cases} \tilde{h}_{t} & \text{if}\, l = a_{t}\: \text{and}\: \mathbf{M}_{t-1,l} = 0 \newline \mathbf{M}_{t-1,l} & \text{otherwise} \end{cases} \newline h_{t} &= \begin{cases} \tilde{h}_{t} & \text{if}\, a_{t} = 0 \newline \mathbf{M}_{t,a_t} & \text{otherwise} \end{cases} \newline y_{t} &= g(h_t) \end{align*}$`
+
+</div>
+</div>
+
+where  `$\mathbf{M}_{0,l} = 0$`  except if `$c(h_{0}) > 0$`, for which `$\mathbf{M}_{0, c(h_{0})} = h_0$` 
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Training
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Training details
+
+</div>
+</div>
+<div class="callout-content">
+
+- The authors recommend **Legendre delay networks** as reservoirs, because they are specifically designed to losslessly reconstruct past states.<sup id="fnref:4" role="doc-noteref">1</sup>
+
+- They also have fewer hyperparameters and are **deterministically constructed**.
+
+</div>
+</div>
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:4" role="doc-endnote" class="footnote"><p>
+
+[Aaron Voelker, Ivana Kajić, Chris Eliasmith (2019)](@voelkerLegendreMemoryUnits2019)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Training
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Training details
+
+</div>
+</div>
+<div class="callout-content">
+
+- A sequence `$a_{1}, \cdots, a_{T}$` <!-- .element: class="fragment highlight-red" data-fragment-index="5" --> of target memory addresses is needed for every training sequence `$x_{1},  \cdots, x_{T}$` in the dataset.
+
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->The hidden states `$h_t$` are computed via the defined dynamics
+
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->The addresses `$a_t$` are injected via teacher forcing, replacing the output of the classifier `$c(\tilde{h}_t)$` during training.
+
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->Finally, the output layer `$g$` is computed via linear regression, while the memory head `$c$` can be any classifier of choice. The authors use a support vector machine.
+
+</div>
+</div>
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Memory Machine
+#### Training
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+<div class="callout callout-color7">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-bolt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Limitations
+
+</div>
+</div>
+<div class="callout-content">
+
+- A sequence `$a_{1}, \cdots, a_{T}$` <!-- .element: style="color: red" --> of target memory addresses is needed for every training sequence `$x_{1},  \cdots, x_{T}$` in the dataset.
+
+</div>
+</div>
+
+As is the case for every memory-augmented model presented here that do not make use of an end-to-end training regime, memory access dynamics require further user inputs to be learned.
+<!-- .element: class="fragment fade-in" -->
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Stack Machine
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+<div class="callout callout-color5">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-exclamation-triangle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+RMMs as Finite state machines
+
+</div>
+</div>
+<div class="callout-content">
+
+It can be shown that **RMMs** can simulate any **FSM**, but fail to correctly represent *at least* some **LR(1)-automata**.
+
+For this reason, instead of extending a network with a **fixed size** memory, it's reasonable to use a **dynamic stack** instead.
+
+<!-- .element: class="fragment fade-in" -->
+
+</div>
+</div>
+
+<img src="Pictures/rsm/rsm.png" alt="" style="object-fit: scale-down">
+
+<!-- .element: class="fragment fade-in" -->
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Stack Machine
+#### Idea
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<img src="Pictures/rsm/rsm.png" alt="" style="object-fit: scale-down">
+
+
+At **each** time-step `$t$`:
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->**Encode** both `$x_{1}, \cdots, x_{t}$` (*input*) as `$h_t$` and `$s_{1}, \cdots, s_{\tau}$` (*stack content*) as `$g_t$` using the same reservoir `$(\mathbf{U}, \mathbf{W}, \sigma)$`
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->`$c^{\text{pop}}$` decides what symbols (how many) to pop from the stack
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->`$c^{\text{push}}$` decides which symbols to append onto the stack
+- &shy;<!-- .element: class="fragment" data-fragment-index="4" -->`$c^{\text{out}}$` computes the current output `$y_t$`
+- &shy;<!-- .element: class="fragment" data-fragment-index="5" -->`$c^{\text{shift}}$` decides whether to push the input `$x_t$` onto the stack
+- &shy;<!-- .element: class="fragment" data-fragment-index="6" -->Every time the stack changes, `$g_t$` gets updated
+- &shy;<!-- .element: class="fragment" data-fragment-index="7" -->Each of the above classifiers takes as input `$(h_{t}, g_{t})$`
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Reservoir Stack Machine
+#### Training
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+<div class="block">
+
+Training is largely similar to that of **RMMs**, but since it uses more than one classifier, more training signals are required. Nonetheless, given a *sufficiently rich*<sup id="fnref:6" role="doc-noteref">1</sup>reservoir, linear classifiers are enough.
+<!-- .element: style="font-size: 30px" -->
+
+<div class="callout callout-color2">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-fire-alt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Linear separability of RSM representations
+
+</div>
+</div>
+<div class="callout-content">
+
+<img src="Pictures/rsm/rsm-separability.png" alt="" style="width: 600px; object-fit: fill">
+
+
+Contractive reservoirs are generally good separators<sup id="fnref:6" role="doc-noteref">2</sup>
+
+</div>
+</div>
+
+<!-- .element: style="font-size: 25px" -->
+
+
+</div>
+
+
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:6" role="doc-endnote" class="footnote"><p>
+
+The concept of richness here is related to the separability properties of the reservoir: [Benjamin Paaßen, Alexander Schulz, Terrence C. Stewart, Barbara Hammer (2022)](@paassenReservoirMemoryMachines2022)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## End-to-End Memory Reservoir models
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+<div class="callout callout-color2">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-fire-alt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Echo memory-augmented network<sup id="fnref:9" role="doc-noteref">1</sup>
+
+</div>
+</div>
+<div class="callout-content">
+
+<img src="Pictures/echo-memory-augmented-network.png" alt="" style="object-fit: scale-down">
+
+
+</div>
+</div>
+
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:9" role="doc-endnote" class="footnote"><p>
+
+[Qianli Ma, Zhenjing Zheng, Wanqing Zhuang, Enhuan Chen, Jia Wei, Jiabing Wang (2021)](@maEchoMemoryAugmentedNetwork2021)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## End-to-End Memory Reservoir models
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+<div class="block">
+
+<div class="callout callout-color2">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-fire-alt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Echo memory-augmented network
+
+</div>
+</div>
+<div class="callout-content">
+
+<img src="Pictures/echo-memory-augmented-network.png" alt="" style="object-fit: scale-down">
+
+
+</div>
+</div>
+<!-- .element: style="font-size: 25px" -->
+
+**End-to-end** memory systems have been shown to exhibit state of the art performance in time-series classification. This particular model uses an **ESN** to produce a memory matrix containing input embeddings. A deep convolutional head paired with an attention mechanism are used to extract features from the input and the memory matrix.
+<!-- .element: style="font-size: 25px" -->
+
+</div>
+
+
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Results
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+
+<aside class="notes"><p>![[Chomsky hierarchy]] </p>
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+<div class="block">
+
+<img src="Excalidraw/Chomsky hierarchy.light.png" alt="" style="width: 500px; object-fit: fill">
+
+<div class="callout callout-color2">
+<div class="callout-title">
+<div class="callout-icon">
+
+<p><i class="fas fa-fire-alt" ></i></p>
+</div>
+<div class="callout-title-inner">
+
+<p>Main theoretical results</p>
+</div>
+</div>
+<div class="callout-content">
+
+<ol>
+<li><p><strong>ESNs</strong> cannot simulate every <strong>FSM</strong> <em>(ESN <code>$\subset$</code> FSM)</em></p>
+</li>
+<li><p><strong>RMMs</strong> can simulate any <strong>FSM</strong> <em>(FSM <code>$\subseteq$</code> RMM)</em></p>
+</li>
+<li><p><strong>RMMs</strong> cannot simulate every <strong>LR(1) automata</strong> <em>(RMM <code>$\subset$</code> LR(1))</em></p>
+</li>
+<li><p><strong>RSM</strong> can simulate any <strong>LR(1) automata</strong> <em>(LR(1) <code>$\subseteq$</code> RSM)</em></p>
+</li>
+</ol>
+</div>
+</div>
+
+<!-- .element: style="font-size: 26px" -->
+
+</div>
+
+
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<h6 id="©-2023-marco-pampaloni---computational-neuroscience-unipi">© 2023 Marco Pampaloni - Computational Neuroscience (Unipi)</h6>
+</div>
+</div></aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Results
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+Given their **Markovianity**, contractive reservoirs will produce the same state for two (*long enough*) sequences sharing the same suffix
+
+<div class="callout callout-color8">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Example (ESN `$\subset$` FSM)
+
+</div>
+</div>
+<div class="callout-content">
+
+Consider the input sequences `$b^T$` (`$b$` repeated `$T$` times) and `$ab^{T-1}$`.
+
+A **Moore Machine** would easily distinguish between the two, while they would be completely indistinguishable for a **Contractive reservoir**.
+
+</div>
+</div>
+
+The authors provide proof for the statement above  `$\:\longrightarrow$`
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Results
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+<div class="block">
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Theorem<sup id="fnref:5" role="doc-noteref">1</sup>&nbsp;(ESN `$\subset$` FSM)
+
+</div>
+</div>
+<div class="callout-content">
+
+Consider the Moore Machine `$\mathcal{A}_{ab^*}$` that recognizes the language `$ab^*$`.
+
+Let `$(\mathbf{U}, \mathbf{W}, b, \sigma, h_{0})$` be some Contractive reservoir with constant `$C \in (0, 1)$`.
+
+**Then it holds**: For any continuous function `$g \, : \, \mathbb{R}^{n} \rightarrow \mathbb{R}$` there exists some `$T \ \in \mathbb{N}$` and some sequences `$x_{1}, \cdots, x_{T}\in \{a, b\}^*$` such that `$g(h_{T}) \neq z_T$`, where `$h_T$` is the state of the reservoir for the one-hot encoded input sequence, and where `$z_T$` is the final output of the Moore machine `$\mathcal{A}_{ab^*}$` for the same input.
+
+</div>
+</div>
+
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:5" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paaßen, Alexander Schulz, Terrence C. Stewart, Barbara Hammer (2022)](@paassenReservoirMemoryMachines2022)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Results
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+<div class="block">
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Theorem<sup id="fnref:5" role="doc-noteref">1</sup>&nbsp;(ESN `$\subset$` FSM)
+
+</div>
+</div>
+<div class="callout-content">
+
+Consider the Moore Machine `$\mathcal{A}_{ab^*}$` that recognizes the language `$ab^*$`.
+
+Let `$(\mathbf{U}, \mathbf{W}, b, \sigma, h_{0})$` be some Contractive reservoir with constant `$C \in (0, 1)$`.
+
+**Then it holds**: For any continuous function `$g \, : \, \mathbb{R}^{n} \rightarrow \mathbb{R}$` there exists some `$T \ \in \mathbb{N}$` and some sequences `$x_{1}, \cdots, x_{T}\in \{a, b\}^*$` such that `$g(h_{T}) \neq z_T$`, where `$h_T$` is the state of the reservoir for the one-hot encoded input sequence, and where `$z_T$` is the final output of the Moore machine `$\mathcal{A}_{ab^*}$` for the same input.
+
+</div>
+</div>
+
+</div>
+
+ <!-- .element: style="font-size: 26px" -->
+
+
+**Note**\: this relies on `$C < 1$`. Reservoirs at the **Edge of chaos** might be computationally more powerful, but it is yet unclear<sup id="fnref:2" role="doc-noteref">2</sup>.
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:5" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paaßen, Alexander Schulz, Terrence C. Stewart, Barbara Hammer (2022)](@paassenReservoirMemoryMachines2022)
+
+</p></li><li id="fn:2" role="doc-endnote" class="footnote"><p>
+
+[Claudio Gallicchio, Alessio Micheli, Luca Pedrelli (2018)](@gallicchioDesignDeepEcho2018)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Results
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="block">
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Theorem<sup id="fnref:1" role="doc-noteref">1</sup>&nbsp;(FSM `$\subseteq$` RSM)
+
+</div>
+</div>
+<div class="callout-content">
+
+**Let** `$\mathcal{A} = (Q, \Sigma, \Gamma, \delta, \rho, q_{0})$` be a Moore Machine with `$\Sigma \subset \mathbb{R}^m$` ,
+
+`$Q = \{1, \cdots, L\}$` and `$\Gamma = \{1, \cdots, K\}$`  for some `$m, L, K \in \mathbb{N}$`.
+
+**Further** let `$(\mathbf{U}, \mathbf{W}, b, \sigma, h_0)$` be a reservoir *sufficiently rich*<sup id="fnref:2" role="doc-noteref">2</sup>.
+
+**Then there exist** functions
+
+`$ \begin{align*} &c \,  : \, \mathbb{R}^{n}\rightarrow \{0, \cdots, L\}, \newline &g \, : \, \mathbb{R}^{n} \rightarrow \{1, \cdots, K\}\: \text{such that} \end{align*}$`
+
+`$\mathcal{M_{A}} = (\mathbf{U}, \mathbf{W}, b, \sigma, h_0, \{0, \cdots, L\}, c, g)$` is a RMM that simulates `$\mathcal{A}$`.
+
+</div>
+</div>
+
+</div>
+
+ <!-- .element: style="font-size: 28px" -->
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:1" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paaßen, Alexander Schulz, Terrence C. Stewart, Barbara Hammer (2022)](@paassenReservoirMemoryMachines2022)
+
+</p></li><li id="fn:2" role="doc-endnote" class="footnote"><p>
+
+Here the concept of "richness" is related to the memory capacity of the reservoir: [Benjamin Paaßen, Alexander Schulz, Terrence C. Stewart, Barbara Hammer (2022)](@paassenReservoirMemoryMachines2022)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Results
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Theorem<sup id="fnref:1" role="doc-noteref">1</sup>(RMM `$\subset$` LR(1))
+
+</div>
+</div>
+<div class="callout-content">
+
+**Let** `$\mathcal{A}_{\text{palin}}$` be an LR(1) automata that recognizes the language of palindromes over `$\{a, b\}$` with `${\$}$` in the middle.
+
+**Let** `$\Sigma = \{a,b, \$\}$`  be encodings of the respective symbols.
+
+**Let** `$\mathcal{M}$` be a RMM with a uniformly continuous output function `$g$`, i.e., `$\forall \epsilon$`, `$\exists$` some `$\tilde{\delta}_{\epsilon}$`  such that for any two `$h, h' \in \mathbb{R}^m$` with `$||h - h'|| \lt \tilde{\delta}_{\epsilon}$` it holds `$|g(h) - g(h')| \lt \epsilon$`.
+
+**Then**, `$\mathcal{M}$` does not simulate `$\mathcal{A}_{\text{palin}}$`
+
+</div>
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:1" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paaßen, Alexander Schulz, Barbara Hammer (2022)](@paassenReservoirStackMachines2022)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Results
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+LR(1) `$\subseteq$` RSM
+
+</div>
+</div>
+<div class="callout-content">
+
+As already anticipated, the extension of **ESNs**  with a **stack** has been proven sufficient to simulate any **LR(1)-automata**<sup id="fnref:5" role="doc-noteref">1</sup>
+
+</div>
+</div>
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:5" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paaßen, Alexander Schulz, Terrence C. Stewart, Barbara Hammer (2022)](@paassenReservoirMemoryMachines2022)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Future Research
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color9">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-quote-left" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Stacks and Turing machines
+
+</div>
+</div>
+<div class="callout-content">
+
+As noted in<sup id="fnref:5" role="doc-noteref">1</sup>, research on using reservoir models with more than one stack to match the computational power of **Turing machines** is still needed, along with the discovery of automatic ways of producing teaching signals for *non* end-to-end systems such as **RMM**s and **RSM**s.
+
+</div>
+</div>
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:5" role="doc-endnote" class="footnote"><p>
+
+[Benjamin Paaßen, Alexander Schulz, Barbara Hammer (2022)](@paassenReservoirStackMachines2022)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Future Research
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+<div class="block">
+
+Recent work on **Reservoir transformers**<sup id="fnref:7" role="doc-noteref">1</sup>might prove an intriguing direction of research.
+Some experiments on extending transformers with working memories have already been carried out and are an interesting frontier of research in the NLP domain.
+<!-- .element: style="font-size: 30px" -->
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Memorizing transformer
+
+</div>
+</div>
+<div class="callout-content">
+
+<img src="Pictures/memorizing-transformer.png" alt="" style="width: 500px; object-fit: fill">
+
+
+</div>
+</div>
+
+<!-- .element: style="font-size: 25px" -->
+</div>
+
+
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:7" role="doc-endnote" class="footnote"><p>
+
+[Sheng Shen, Alexei Baevski, Ari S. Morcos, Kurt Keutzer, Michael Auli, Douwe Kiela (2021)](@shenReservoirTransformers2021)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Future Research
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-info-circle" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Memorizing transformer<sup id="fnref:8" role="doc-noteref">1</sup>
+
+</div>
+</div>
+<div class="callout-content">
+
+<img src="Pictures/memorizing-transformer.png" alt="" style="width: 900px; object-fit: fill">
+
+
+</div>
+</div>
+
+<!-- .element: style="font-size: 25px" -->
+
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+<div class="footnotes" role="doc-endnotes">
+<ol>
+<li id="fn:8" role="doc-endnote" class="footnote"><p>
+
+[Yuhuai Wu, Markus N. Rabe, DeLesley Hutchins, Christian Szegedy (2022)](@wuMemorizingTransformers2022)
+
+</p></li></ol>
+</div>
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Conclusions
+</div>
+
+ 
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color1">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-clipboard-list" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Summary
+
+</div>
+</div>
+<div class="callout-content">
+
+- Memory augmented reservoir methods have been shown to be a fast and cheap alternative to end-to-end DNCs.
+
+- **RMM**s and **RSM**s can (theoretically) simulate any finite state automata and LR(1) automata, respectively.
+
+- Extensions of current models (e.g. with more than one stack) are possible and of theoretical interest.
+
+- **State of the art** results can be reached with end-to-end reservoir memory-augmented methods.
+
+</div>
+</div>
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## Conclusions
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+<div class="callout callout-color7">
+<div class="callout-title">
+<div class="callout-icon">
+
+<i class="fas fa-bolt" ></i>
+
+
+</div>
+<div class="callout-title-inner">
+
+Limitations
+
+</div>
+</div>
+<div class="callout-content">
+
+- **RMM**s and **RSM**s both need additional teaching signals in order to train the external memory controller.
+
+- Their practical use remain uncertain because of their need of additional training data and because they lack content-based addressing.
+
+- Some benchmark tasks of NTMs are still out of reach of non end-to-end models.
+
+</div>
+</div>
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## References
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+- [Aaron Voelker, Ivana Kajić, Chris Eliasmith (2019)](@voelkerLegendreMemoryUnits2019)
+- [Alex Graves, et al. (2016)](@gravesHybridComputingUsing2016)
+- [Alex Graves, Greg Wayne, Ivo Danihelka (2014)](@gravesNeuralTuringMachines2014)
+- [Benjamin Paassen, Alexander Schulz (2020)](@paassenReservoirMemoryMachines2020)
+- [Benjamin Paaßen, Alexander Schulz, Terrence C. Stewart, Barbara Hammer (2022)](@paassenReservoirMemoryMachines2022)
+- [Benjamin Paaßen, Alexander Schulz, Barbara Hammer (2022)](@paassenReservoirStackMachines2022)
+- [Claudio Gallicchio, Alessio Micheli (2011)](@gallicchioArchitecturalMarkovianFactors2011)
+- [Claudio Gallicchio, Alessio Micheli, Luca Pedrelli (2018)](@gallicchioDesignDeepEcho2018)
+- [Igor Farkaš, Radomír Bosák, Peter Gergeľ (2016)](@farkasComputationalAnalysisMemory2016)
+- [Qianli Ma, Zhenjing Zheng, Wanqing Zhuang, Enhuan Chen, Jia Wei, Jiabing Wang (2021)](@maEchoMemoryAugmentedNetwork2021)
+- [Sheng Shen, Alexei Baevski, Ari S. Morcos, Kurt Keutzer, Michael Auli, Douwe Kiela (2021)](@shenReservoirTransformers2021)
+- [Yuhuai Wu, Markus N. Rabe, DeLesley Hutchins, Christian Szegedy (2022)](@wuMemorizingTransformers2022)
+
+
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 1080px; width: 960px; min-height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="padding: 100px 0px 200px 0px; box-sizing: border-box; position: absolute; left: 0%; top: 0%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<div class="block">
+
+## The end
+</div>
+
+
+</div>
+
+<div class="" style="font-size: 32px; padding: 50px 0 0 0; box-sizing: border-box; position: absolute; left: 0%; top: 40%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+
+
+
+# Thank you for your time
+</div>
+
+
+<div class="" style="position: absolute; left: 0%; top: 40%; height: 40%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<split even wrap="1" no-margin>
+
+</split>
+</div>
+
+<div class="" style="position: absolute; left: 0%; top: 99%; height: 1%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+
+</div>
+
+<style>
+.horizontal_dotted_line{
+  border-bottom: 2px solid lightgray;
+} 
+
+.source, .footnotes  ol>li{
+  font-size: 20px;
+}
+
+.moon {
+background-color: white;
+}
+
+.callout-content {
+overflow-x: hidden !important;
+overflow-y: hidden !important;
+}
+
+</style>
+
+<div class="horizontal_dotted_line" style="opacity: 0.5; position: absolute; left: 3%; top: 94%; height: 0%; width: 94%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+</div>
+
+<div class="" style="padding: 0 30px; box-sizing: border-box; position: absolute; left: 0%; top: 65%; height: 30%; width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end" align="left">
+
+
+</div>
+
+<div class="" style="padding: 2px 10px 0px 0px; box-sizing: border-box; opacity: 0.6; position: absolute; left: 90%; top: 94%; height: 6%; width: 10%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+<img src="Pictures/logo-unipi/cherubino_blue.svg" alt="" style="object-fit: scale-down">
+
+</div>
+
+<div class="" style="opacity: 0.8; position: absolute; left: 0%; top: 94%; height: 6%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+###### © 2023 Marco Pampaloni - Computational Neuroscience (Unipi) 
+</div>
+</div></script></section></div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script src="plugin/zoom/zoom.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/math/math.js"></script>
+	<script src="plugin/mermaid/mermaid.js"></script>
+	<script src="plugin/chart/chart.min.js"></script>
+	<script src="plugin/chart/plugin.js"></script>
+	<script src="plugin/customcontrols/plugin.js"></script>
+	<script src="plugin/elapsed-time-bar/elapsed-time-bar.js"></script>
+
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+	  function isLight(color) {
+		let hex = color.replace('#', '');
+
+		// convert #fff => #ffffff
+		if(hex.length == 3){
+			hex = `${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+		}
+
+		const c_r = parseInt(hex.substr(0, 2), 16);
+		const c_g = parseInt(hex.substr(2, 2), 16);
+		const c_b = parseInt(hex.substr(4, 2), 16);
+		const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+		return brightness > 155;
+	}
+
+	var bgColor = getComputedStyle(document.documentElement).getPropertyValue('--r-background-color').trim();
+	var isLight = isLight(bgColor);
+
+	if(isLight){
+		document.body.classList.add('has-light-background');
+	} else {
+		document.body.classList.add('has-dark-background');
+	}
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath.MathJax3,
+		  RevealMermaid,
+		  RevealChart,
+		  RevealCustomControls,
+		  ElapsedTimeBar
+        ],
+
+
+    	allottedTime: 60 * 15 * 1000,
+
+		mathjax3: {
+			mathjax: 'plugin/math/mathjax/tex-mml-chtml.js',
+		},
+		markdown: {
+		  gfm: true,
+		  mangle: true,
+		  pedantic: false,
+		  smartLists: false,
+		  smartypants: false,
+		},
+
+		mermaid: {
+			theme: isLight ? 'default' : 'dark',
+		},
+
+		customcontrols: {
+			controls: [
+				{id: 'toggle-overview',
+				title: 'Toggle overview (O)',
+				icon: '<i class="fa fa-th"></i>',
+				action: 'Reveal.toggleOverview();'
+				},
+			]
+		},
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"width":960,"height":1080,"margin":0.07,"maxScale":4,"controls":true,"progress":true,"slideNumber":true,"transition":"slide","transitionSpeed":"fast"}, queryOptions);
+    </script>
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+
+  <!-- created with Advanced Slides -->
+</html>
